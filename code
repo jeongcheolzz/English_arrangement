@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>영어 배열 퀴즈</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 30px; }
+    .hidden { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+    .box { padding: 20px; background: #f0f0f0; border-radius: 8px; cursor: pointer; }
+    #words button { margin: 5px; padding: 10px 15px; border-radius: 6px; }
+    #answer { margin-top: 20px; font-size: 18px; min-height: 30px; }
+    #homeBtn { margin-top: 20px; padding: 10px 15px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <!-- 메인화면 -->
+  <div id="home">
+    <h2>문제를 선택하세요</h2>
+    <div class="grid" id="problemList"></div>
+  </div>
+
+  <!-- 문제화면 -->
+  <div id="quiz" class="hidden">
+    <h2 id="korean"></h2>
+    <div id="words"></div>
+    <div id="answer"></div>
+    <button onclick="checkAnswer()">제출</button>
+    <button id="homeBtn" onclick="goHome()">홈으로</button>
+  </div>
+
+  <script>
+    // 문제 데이터
+    const problems = [
+      {
+        korean: "당신이 당신의 견해를 깃발처럼 들 때, 사람들은 어디서 당신을 찾아야 할지를 안다.",
+        english: "When you raise your viewpoint up like a flag, people know where to find you."
+      },
+      {
+        korean: "또 다른 가능성은 어떤 주장도 반박되지 않는 것이다.",
+        english: "Another possibility is that neither argument is refuted."
+      },
+      {
+        korean: "이것은 지난 30년 중에서 가장 중요한 신경과학 발견들 중의 하나이다.",
+        english: "This is one of the most important neuroscience discoveries of the last thirty years."
+      },
+      {
+        korean: "사람들은 유아들이 그들에게 향하는 것을 실제로 확실하게 하는 지각과 관련된 특성을 가지고 있다.",
+        english: "People have perceptual characteristics that virtually assure that infants will orient toward them."
+      },
+      {
+        korean: "최고의 가능한 시간 평균적인 농작물 생산량을 만드는 것은 농부의 목표가 아니다.",
+        english: "It is not the peasant’s goal to produce the highest possible time-averaged crop yield."
+      },
+      {
+        korean: "단지 하나의 활동에서 전문화함으로써 각각의 노동자는 특정한 활동에 숙달하게 된다.",
+        english: "By specializing in just one activity, each worker gains mastery over the particular activity."
+      },
+      {
+        korean: "자기연관적인 일로 도움을 받는 것은 당신이 당신 자신에 대해 나쁘게 느끼게 만들 수 있다.",
+        english: "Receiving help with a self-relevant task can make you feel bad about yourself."
+      },
+      {
+        korean: "할 수 있는 사람은 기초를 가르칠 수 없다고 말하는 것이 더 정확할 것이다.",
+        english: "It would be more accurate to say that those who can do, can’t teach the basics."
+      },
+      {
+        korean: "속이는 사람이 되는 것은 자의식을 환기시키며 적절함에 대한 논리를 촉발한다.",
+        english: "Being a cheater evokes a sense of self, triggering the logic of appropriateness."
+      },
+      {
+        korean: "뇌가 바르게 발달하려면 그것은 적절한 종류의 환경을 필요로 한다.",
+        english: "Brains require the right kind of environment if they are to correctly develop."
+      },
+      {
+        korean: "이 사람들이 세계의 다른 지역으로 퍼져나갔는지, 사람들이 세계의 다른 지역에서 독립적으로 발생했는지에 대해서는 논쟁이 있다.",
+        english: "There is a debate about whether these people spread into other parts of the world or people developed independently in various parts of the world."
+      },
+      {
+        korean: "그는 패션이 매년 일어나는 변화의 수준이 아니라 역사의 척도에 위치하는 매우 규칙적인 현상이라는 것을 분명하게 보여주었다.",
+        english: "He demonstrated unambiguously that fashion is a profoundly regular phenomenon which is not located at the level of annual variations but on the scale of history."
+      },
+      {
+        korean: "일관성과 반복 가능성은 여러분의 회사에 이익을 가져오기보다 새로운 생각을 짓누를 가능성이 더 높다.",
+        english: "Consistency and repeatability are more likely to suppress fresh thinking than to bring your company profit."
+      },
+      {
+        korean: "다른 사람들은 과학을 그것을 만들어 내는 사람들의 문화적 관점과 가치에 의해 영향을 받지 않는 순전히 객관적인 일로 본다.",
+        english: "Others see science as a purely objective pursuit, uninfluenced by the cultural viewpoint and values of those who create it."
+      },
+      {
+        korean: "우리의 감정과 행동을 관리하는 것이 우리가 부모로서 평안함을 느끼도록 해준다는 것이다.",
+        english: "Managing our own emotions and actions is what allows us to feel peaceful as parents."
+      },
+      {
+        korean: "만약 대부분의 너도밤나무를 감염시켜 죽게 만드는 새로운 병원균이 나타난다면 어떻게 될까?",
+        english: "What would happen if a new pathogen came along that infected most of the beeches and killed them?"
+      },
+      {
+        korean: "요리하는 일의 많은 부분을 기업에 아웃소싱하는 것은 전통적으로 여성들에게 한정된 가족들을 먹여야 하는 책임이었던 것에서 여성들을 벗어나게 했다.",
+        english: "The outsourcing of much of the work of cooking to corporations has relieved women of what has traditionally been their exclusive responsibility for feeding the family."
+      },
+      {
+        korean: "소비자로서 여러분은 지갑으로 투표할 힘을 가지고 있고, 여러분이 선택한 모든 구매를 통해 회사들이 더 건강하고 더 지속 가능한 관행을 받아들이도록 장려할 힘이 있다.",
+        english: "As a consumer, you have the power to vote with your wallet and encourage companies to embrace healthier and more sustainable practices with every purchase you choose to make."
+      },
+      {
+        korean: "그러한 품목들이 선반에 도달하기 위해 이미 수백 마일을 이동했고 일단 그것들이 버려지게 되면 그것들은 새로운 탄소 마일 여정을 시작한다는 것을 기억하라.",
+        english: "Remember those items have already travelled hundreds of miles to reach the shelves and once they go into waste they start a new carbon mile journey."
+      },
+      {
+        korean: "우리가 나이가 들수록, 우리의 뇌와 신체가 카페인을 제거하는 것이 더 오래 걸린다.",
+        english: "The older we are, the longer it takes our brain and body to remove caffeine."
+      }
+    ];
+
+    let currentProblem = null;
+    let correct = [];
+    let userAnswer = [];
+
+    // 메인화면 문제 박스 생성
+    function loadHome() {
+      const list = document.getElementById("problemList");
+      list.innerHTML = "";
+      problems.forEach((p, i) => {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.textContent = i + 1;
+        box.onclick = () => startQuiz(i);
+        list.appendChild(box);
+      });
+    }
+
+    // 퀴즈 시작
+    function startQuiz(index) {
+      currentProblem = problems[index];
+      correct = currentProblem.english.split(" ");
+      userAnswer = [];
+
+      document.getElementById("home").classList.add("hidden");
+      document.getElementById("quiz").classList.remove("hidden");
+
+      document.getElementById("korean").textContent = "해석: " + currentProblem.korean;
+      document.getElementById("answer").textContent = "";
+      renderWords();
+    }
+
+    // 단어 섞기
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function renderWords() {
+      const container = document.getElementById("words");
+      container.innerHTML = "";
+      shuffle([...correct]).forEach(word => {
+        const btn = document.createElement("button");
+        btn.textContent = word;
+        btn.onclick = () => selectWord(word, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectWord(word, btn) {
+      userAnswer.push(word);
+      btn.disabled = true;
+      document.getElementById("answer").textContent = userAnswer.join(" ");
+    }
+
+    // 정답 확인
+    function checkAnswer() {
+      if (userAnswer.join(" ") === correct.join(" ")) {
+        alert("정답입니다!");
+      } else {
+        alert("틀렸습니다. 정답은: " + correct.join(" "));
+      }
+    }
+
+    // 홈으로 이동
+    function goHome() {
+      document.getElementById("quiz").classList.add("hidden");
+      document.getElementById("home").classList.remove("hidden");
+    }
+
+    // 시작 시 메인화면 로딩
+    loadHome();
+  </script>
+</body>
+</html>
